@@ -10,19 +10,28 @@ def newton_step(p_newton_old, dt, n):
     :param n: Grid Length
     :return: Newton stepped Pressure
     """
-    gradient = np.gradient(p_newton_old, 1.0/(n))
+    eps = 1
+    pold = p_newton_old
+    pnew = p_newton_old
+    omega = 0.1
+    step = 0
+    while eps > 1e-3 and step < 1000:
+        pold = pnew
+        gradient = np.gradient(pold, 1.0/(n))
+        # Eliminate Zeros and Nans
+        new_divide = np.zeros(n+1)
+        for i in range(len(gradient)-1):
+            if gradient[i] != 0:
+                new_divide[i] = pold[i]/gradient[i]
+            else:
+                new_divide[i] = 0
 
-    # Eliminate Zeros and Nans
-    new_divide = np.zeros(n+1)
-    for i in range(len(gradient)-1):
-        if gradient[i] !=0:
-            new_divide[i] = p_newton_old[i]/gradient[i]
-        else:
-            new_divide[i] = 0
+        pnew = pold + omega * new_divide
+        eps = np.linalg.norm(pnew-p_newton_old)
+        print('At Step {}, eps: {}'.format(step, eps))
+        step += 1
 
-    p_newton_new = p_newton_old + dt * new_divide
-
-    return p_newton_new
+    return pnew
 
 
 def calculate_pd(p_newton_new, p_newton_old, dt,
@@ -61,24 +70,24 @@ def calculate_pd(p_newton_new, p_newton_old, dt,
         # Old Method without equation Modification
         # Leave Now, scheme is unstable
 
-        #term1 = (p_newton_new[i + 1] - (2 * p_newton_new[i]) + p_newton_new[
-        #    i - 1]) / (delta_y ** 2)
-        #term21 = alpha_d * p_newton_new[n - 1] * (i - 1)
-        #term22 = (((1 + lambda_d) ** 2) / lambda_d ** 2) * i * ((p_newton_new[
-        #                                                             n - 2] - (
-        #                                                                 2 *
-        #                                                                 p_newton_new[
-        #                                                                     n - 1])) / delta_y ** 2) * \
-        #         p_newton_new[n - 1]
-        #term2 = ((p_newton_new[i + 1] - p_newton_new[i]) / delta_y) * (
-        #        term21 - term22)
+        term1 = (p_newton_new[i + 1] - (2 * p_newton_new[i]) + p_newton_new[
+            i - 1]) / (delta_y ** 2)
+        term21 = alpha_d * p_newton_new[n - 1] * (i - 1)
+        term22 = (((1 + lambda_d) ** 2) / lambda_d ** 2) * i * ((p_newton_new[
+                                                                     n - 2] - (
+                                                                         2 *
+                                                                         p_newton_new[
+                                                                             n - 1])) / delta_y ** 2) * \
+                 p_newton_new[n - 1]
+        term2 = ((p_newton_new[i + 1] - p_newton_new[i]) / delta_y) * (
+                term21 - term22)
 
         # New Method with Modifications
 
-        term1 = (pd[i + 1] - (2 * pd[i]) + pd[i - 1]) / (delta_y ** 2)
-        term21 = alpha_d * pd[n - 1] * (i - 1)
-        term22 = (((1 + lambda_d) ** 2) / lambda_d ** 2) * i * ((pd[n - 2] - (2 * pd[n - 1])) / delta_y ** 2) * pd[n - 1]
-        term2 = ((pd[i + 1] - pd[i]) / delta_y) * (term21 - term22)
+        #term1 = (pd[i + 1] - (2 * pd[i]) + pd[i - 1]) / (delta_y ** 2)
+        #term21 = alpha_d * pd[n - 1] * (i - 1)
+        #term22 = (((1 + lambda_d) ** 2) / lambda_d ** 2) * i * ((pd[n - 2] - (2 * pd[n - 1])) / delta_y ** 2) * pd[n - 1]
+        #term2 = ((pd[i + 1] - pd[i]) / delta_y) * (term21 - term22)
 
         rhs = ((1 + lambda_d) ** 2) * (term1 + term2)
 

@@ -19,7 +19,7 @@ def simulate(args):
     n = 20
     p_newton_new = np.zeros(n + 1)
     p_newton_old = np.zeros(n + 1)
-    p_newton_old[0] = -10
+    p_newton_old[0] = 1
     p_newton_old[n] = 0
     p_d = np.zeros(n + 1)
     p_do = pd.DataFrame(columns=['t', 'p_d0'])
@@ -35,17 +35,17 @@ def simulate(args):
 
         # Add plot functions and store functions if necessary
 
-        # p_do = p_do.append({'t': t, 'p_d0': p_d[0]}, ignore_index=True)
+        p_do = p_do.append({'t': t, 'p_d0': p_d[0]}, ignore_index=True)
 
-    #plt.plot(p_do.t, p_do.p_d0)
-    #plt.show()
+    plt.plot(p_do.t, p_do.p_d0)
+    plt.show()
 
 
 if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser(description=__doc__)
     arg_parser.add_argument('--time', type=int, default=10000,
                             help='Total time for simulation')
-    arg_parser.add_argument('--step_size', type=float, default=10,
+    arg_parser.add_argument('--step_size', type=float, default=1e-6,
                             help='Time step Size')
     arg_parser.add_argument('--alpha', type=float, default=0.008,
                             help='Alpha_D value')
