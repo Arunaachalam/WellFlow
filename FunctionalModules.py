@@ -17,17 +17,17 @@ def newton_step(p_newton_old, dt, n):
     step = 0
     while eps > 1e-3 and step < 1000:
         pold = pnew
-        gradient = np.gradient(pold, 1.0/(n))
+        gradient = np.gradient(pold, 1.0 / (n))
         # Eliminate Zeros and Nans
-        new_divide = np.zeros(n+1)
-        for i in range(len(gradient)-1):
+        new_divide = np.zeros(n + 1)
+        for i in range(len(gradient) - 1):
             if gradient[i] != 0:
-                new_divide[i] = pold[i]/gradient[i]
+                new_divide[i] = pold[i] / gradient[i]
             else:
                 new_divide[i] = 0
 
         pnew = pold + omega * new_divide
-        eps = np.linalg.norm(pnew-p_newton_old)
+        eps = np.linalg.norm(pnew - p_newton_old)
         print('At Step {}, eps: {}'.format(step, eps))
         step += 1
 
@@ -64,7 +64,7 @@ def calculate_pd(p_newton_new, p_newton_old, dt,
         pd[n - 1] = p_newton_old[n - 1] + (dt * rhs)
 
     # Calculate Pd -> 1 to N-2
-    for i in range(len(p_newton_new) - 2, 1, -1):#, 1, -1):
+    for i in range(len(p_newton_new) - 2, 1, -1):  # , 1, -1):
         rhs = 0
 
         # Old Method without equation Modification
@@ -84,20 +84,34 @@ def calculate_pd(p_newton_new, p_newton_old, dt,
 
         # New Method with Modifications
 
-        #term1 = (pd[i + 1] - (2 * pd[i]) + pd[i - 1]) / (delta_y ** 2)
-        #term21 = alpha_d * pd[n - 1] * (i - 1)
-        #term22 = (((1 + lambda_d) ** 2) / lambda_d ** 2) * i * ((pd[n - 2] - (2 * pd[n - 1])) / delta_y ** 2) * pd[n - 1]
-        #term2 = ((pd[i + 1] - pd[i]) / delta_y) * (term21 - term22)
+        # term1 = (pd[i + 1] - (2 * pd[i]) + pd[i - 1]) / (delta_y ** 2)
+        # term21 = alpha_d * pd[n - 1] * (i - 1)
+        # term22 = (((1 + lambda_d) ** 2) / lambda_d ** 2) * i * ((pd[n - 2] - (2 * pd[n - 1])) / delta_y ** 2) * pd[n - 1]
+        # term2 = ((pd[i + 1] - pd[i]) / delta_y) * (term21 - term22)
 
         rhs = ((1 + lambda_d) ** 2) * (term1 + term2)
 
         pd[i] += (dt * rhs)
 
         # Leave the next line for now. Some instabilities there
-        #pd[i] = p_newton_old[i] + (dt * rhs)
-
+        # pd[i] = p_newton_old[i] + (dt * rhs)
 
     # Calculate Pd 0
     pd[0] = pd[1] + ((1 + lambda_d) / lambda_d) * pd[n - 1]
 
     return pd
+
+
+def new_newton_raphson(p_newton_new):
+    p = p_newton_new
+    tol = 1e-3
+    pnew = 0
+    count = 0
+    for i in range(1000):
+        pnew = p - (p/np.gradient(p))
+        if np.linalg.norm(pnew - p) > tol:
+            p = pnew
+            count += 1
+        else:
+            break
+    print('At steps {}, residual {}'.format(count, np.linalg.norm(pnew-p)))
