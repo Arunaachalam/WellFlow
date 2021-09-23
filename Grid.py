@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
+import random
 import matplotlib.pyplot as plt
 
 
 class Grid:
     def __init__(self, n, dt, alpha_d, lambda_d):
         self.pressure = np.zeros(n + 1)
-        self.jacobian = np.zeros(n+1, n+1)
+        self.pressurenext = np.zeros(n+1)
+        self.jacobian = np.zeros((n+1, n+1))
         self.delta_y = 1.0 / n
         self.grid = n
         self.alpha_d = alpha_d
@@ -24,7 +26,25 @@ class Grid:
         pass
 
     def calculate_jacobian(self):
-        pass
+        # Calculate pd0 Jacobian
+        self.jacobian[0][0] = random.randint(1, 10)
+        self.jacobian[0][1] = random.randint(1, 10)
+        self.jacobian[0][self.grid - 1] = random.randint(1, 10)
+
+        # Calculate Everything till N-1
+        for i in range(1, self.grid - 1):
+            self.jacobian[i][i - 1] = random.randint(1, 10)
+            self.jacobian[i][i] = random.randint(1, 10)
+            self.jacobian[i][i + 1] = random.randint(1, 10)
+
+        # Calculate N-1
+        self.jacobian[self.grid - 1][self.grid - 2] = random.randint(1, 10)
+        self.jacobian[self.grid - 1][self.grid - 1] = random.randint(1, 10)
+        
+        # Set N as 1
+        self.jacobian[self.grid][self.grid] = random.randint(1,10)
+
+        return self.jacobian
 
     def euler_forward_step(self):
         # Inner loop of 1 to N-2
@@ -41,7 +61,15 @@ class Grid:
         pass
 
     def newton_raphson_step(self):
-        pass
+        p_old = self.pressure
+        residual = 1
+        steps = 0
+        while residual > 1e-3 and steps < 1000:
+            jacobian = self.calculate_jacobian()
+            pnew = p_old - np.linalg.inv(jacobian).dot(p_old)
+            residual = np.linalg.norm(p_old - self.pressure)
+            p_old = self.pressure
+            steps += 1
 
     def update_time_step(self):
         self.newton_raphson_step()
@@ -54,7 +82,7 @@ class Grid:
                                    ignore_index=True)
 
     def plot_pd0(self):
-        plt.plot(self.pd0.Time,self.pd0.Pd0)
+        plt.plot(self.pd0.Time, self.pd0.Pd0)
         plt.xlabel('Time')
         plt.ylabel('Pd0')
         plt.show()
