@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 class Grid:
     def __init__(self, n, dt, alpha_d, lambda_d):
         self.pressure = np.zeros(n + 1)
+        self.jacobian = np.zeros(n+1, n+1)
         self.delta_y = 1.0 / n
         self.grid = n
         self.alpha_d = alpha_d
@@ -18,6 +19,12 @@ class Grid:
     def initialize_pressure(self):
         for i in range(len(self.pressure)):
             self.pressure[i] = (-10 * i * self.delta_y) + 10
+
+    def apply_boundary(self):
+        pass
+
+    def calculate_jacobian(self):
+        pass
 
     def euler_forward_step(self):
         # Inner loop of 1 to N-2
@@ -39,6 +46,7 @@ class Grid:
     def update_time_step(self):
         self.newton_raphson_step()
         self.euler_forward_step()
+        self.apply_boundary()
         return True
 
     def save_pd0(self, t):
