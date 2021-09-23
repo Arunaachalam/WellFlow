@@ -1,4 +1,5 @@
 import numpy as np
+from autograd import grad, jacobian
 
 
 def newton_step(p_newton_old, dt, n):
@@ -107,11 +108,19 @@ def new_newton_raphson(p_newton_new):
     tol = 1e-3
     pnew = 0
     count = 0
-    for i in range(1000):
-        pnew = p - (p/np.gradient(p))
-        if np.linalg.norm(pnew - p) > tol:
-            p = pnew
-            count += 1
-        else:
-            break
-    print('At steps {}, residual {}'.format(count, np.linalg.norm(pnew-p)))
+    print('Jacobian Calculated')
+
+    def giveval(x, i):
+        return x[i]
+
+    for i in range(len(p)):
+        myjac = jacobian(giveval)
+        print(myjac(np.array([p[i],p[i],p[i]])))
+    # for i in range(1000):
+    #    pnew = p - (p/np.gradient(p))
+    #    if np.linalg.norm(pnew - p) > tol:
+    #        p = pnew
+    #        count += 1
+    #    else:
+    #        break
+    # print('At steps {}, residual {}'.format(count, np.linalg.norm(pnew-p)))
