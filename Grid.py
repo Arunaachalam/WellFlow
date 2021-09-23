@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 class Grid:
     def __init__(self, n, dt, alpha_d, lambda_d):
         self.pressure = np.zeros(n + 1)
-        self.pressurenext = np.zeros(n+1)
-        self.jacobian = np.zeros((n+1, n+1))
+        self.pressurenext = np.zeros(n + 1)
+        self.jacobian = np.zeros((n + 1, n + 1))
         self.delta_y = 1.0 / n
         self.grid = n
         self.alpha_d = alpha_d
@@ -27,22 +27,24 @@ class Grid:
 
     def calculate_jacobian(self):
         # Calculate pd0 Jacobian
-        self.jacobian[0][0] = random.randint(1, 10)
-        self.jacobian[0][1] = random.randint(1, 10)
-        self.jacobian[0][self.grid - 1] = random.randint(1, 10)
+        self.jacobian[0][0] = random.randint(1, 10) * 1e4
+        self.jacobian[0][1] = random.randint(1, 10) * 1e4
+        self.jacobian[0][self.grid - 1] = random.randint(1, 10) * 1e4
 
         # Calculate Everything till N-1
         for i in range(1, self.grid - 1):
-            self.jacobian[i][i - 1] = random.randint(1, 10)
-            self.jacobian[i][i] = random.randint(1, 10)
-            self.jacobian[i][i + 1] = random.randint(1, 10)
+            self.jacobian[i][i - 1] = random.randint(1, 10) * 1e4
+            self.jacobian[i][i] = random.randint(1, 10) * 1e4
+            self.jacobian[i][i + 1] = random.randint(1, 10) * 1e4
 
         # Calculate N-1
-        self.jacobian[self.grid - 1][self.grid - 2] = random.randint(1, 10)
-        self.jacobian[self.grid - 1][self.grid - 1] = random.randint(1, 10)
-        
+        self.jacobian[self.grid - 1][self.grid - 2] = random.randint(1,
+                                                                     10) * 1e4
+        self.jacobian[self.grid - 1][self.grid - 1] = random.randint(1,
+                                                                     10) * 1e4
+
         # Set N as 1
-        self.jacobian[self.grid][self.grid] = random.randint(1,10)
+        self.jacobian[self.grid][self.grid] = random.randint(1, 10) * 1e4
 
         return self.jacobian
 
@@ -66,9 +68,10 @@ class Grid:
         steps = 0
         while residual > 1e-3 and steps < 1000:
             jacobian = self.calculate_jacobian()
-            pnew = p_old - np.linalg.inv(jacobian).dot(p_old)
+            self.pressure = p_old - np.linalg.inv(jacobian).dot(p_old)
             residual = np.linalg.norm(p_old - self.pressure)
             p_old = self.pressure
+            # print('Step {}, pressure{}'.format(steps, self.pressure))
             steps += 1
 
     def update_time_step(self):
@@ -82,6 +85,7 @@ class Grid:
                                    ignore_index=True)
 
     def plot_pd0(self):
+        print('{}\n\n{}'.format(self.pd0.Time, self.pd0.Pd0))
         plt.plot(self.pd0.Time, self.pd0.Pd0)
         plt.xlabel('Time')
         plt.ylabel('Pd0')
