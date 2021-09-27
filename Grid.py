@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 class Grid:
     def __init__(self, n, dt, alpha_d, lambda_d):
         self.pressure = np.zeros(n + 1)
-        self.pressurenext = np.zeros(n + 1)
         self.jacobian = np.zeros((n + 1, n + 1))
         self.delta_y = 1.0 / n
         self.grid = n
